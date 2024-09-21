@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataTables Example</title>
+    <!-- DataTablesのCSSとJSをCDNから読み込む -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+</head>
+<body>
+
+    <table id="example" class="display">
+        <thead>
+            <tr>
+                <th><input type="text" placeholder="Search Name"></th>
+                <th><input type="text" placeholder="Search Position"></th>
+                <th><input type="text" placeholder="Search Office"></th>
+                <th><input type="text" placeholder="Search Age"></th>
+                <th><input type="text" placeholder="Search Start Date"></th>
+                <th><input type="text" placeholder="Search Salary"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Tiger Nixon</td>
+                <td>System Architect</td>
+                <td>Edinburgh</td>
+                <td>61</td>
+                <td>2011/04/25</td>
+                <td>$320,800</td>
+            </tr>
+            <tr>
+                <td>Teiger Nixon</td>
+                <td>Syestem Architect</td>
+                <td>Edeinburgh</td>
+                <td>631</td>
+                <td>2021/04/25</td>
+                <td>$310,800</td>
+            </tr>
+            <!-- さらにデータを追加 -->
+        </tbody>
+    </table>
+
+    <script>
+        $(document).ready(function() {
+            var table = $('#example').DataTable();
+        
+            // 各列に検索ボックスを設定
+            $('#example thead input').on('keyup change', function() {
+                var columnIndex = $(this).parent().index(); // 現在の列のインデックス
+                table.column(columnIndex).search(this.value).draw(); // 検索実行
+            });
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>p3r 情報置き場 日付依存イベント</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+</head>
+<body>
+    <h1>p3r 情報置き場 日付依存イベント</h1>
+
+    <table id="example" class="display">
+        <thead>
+            <tr>
+                <th>Name<input type="text" placeholder="Search Name"></th>
+                <th>Position<input type="text" placeholder="Search Position"></th>
+                <th>Office<input type="text" placeholder="Search Office"></th>
+                <th>Age<input type="text" placeholder="Search Age"></th>
+                <th>Start Date<input type="text" placeholder="Search Start Date"></th>
+                <th>Salary<input type="text" placeholder="Search Salary"></th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <script>
+        // CSVファイルの読み込み
+        Papa.parse("date_dependent_event.csv", {
+            download: true,   // CSVファイルをダウンロード
+            header: true,     // ヘッダー行を読み込む
+            complete: function(results) {
+                var data = results.data;
+
+                // DataTablesを初期化
+                $('#example').DataTable({
+                    data: data, // パースされたCSVデータを設定
+                    columns: [
+                        { data: 'Name' },       // CSVの列名に対応
+                        { data: 'Position' },
+                        { data: 'Office' },
+                        { data: 'Age' },
+                        { data: 'Start Date' },
+                        { data: 'Salary' }
+                    ]
+                });
+            }
+        });
+    </script>
+
+    <script>
+        $(document).ready(function() {
+            var table = $('#example').DataTable();
+        
+            // 各列に検索ボックスを設定
+            $('#example thead input').on('keyup change', function() {
+                var columnIndex = $(this).parent().index(); // 現在の列のインデックス
+                table.column(columnIndex).search(this.value).draw(); // 検索実行
+            });
+        });
+    </script>
+
+
+    <div id="footer"></div>
+    <script>
+    fetch('../include/footer.html')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(data => {
+                document.getElementById('footer').innerHTML = data;
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+    </script>
+
+</body>
+</html>
