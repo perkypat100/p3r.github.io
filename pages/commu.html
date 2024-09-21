@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -15,7 +16,22 @@
     <h3>歴史</h3>
     縄文時代に人々がゴミを捨てた場所は今では貝塚と呼ばれる。<br>
 
-    <script src="../footer.js"></script>
+    <div id="footer"></div>
+    <script>
+      fetch('../include/footer.html')
+              .then(response => {
+                  if (!response.ok) {
+                      throw new Error('Network response was not ok');
+                  }
+                  return response.text();
+              })
+              .then(data => {
+                  document.getElementById('footer').innerHTML = data;
+              })
+              .catch(error => {
+                  console.error('There was a problem with the fetch operation:', error);
+              });
+    </script>
   
 </body>
 </html>
