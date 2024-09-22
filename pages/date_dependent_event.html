@@ -1,23 +1,23 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>p3r 情報置き場 日付依存イベント</title>
+    <title>p3r 情報置き場 選択イベント履歴</title>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 </head>
+
 <body>
-    <h1>p3r 情報置き場 日付依存イベント</h1>
-    このページでは日付依存イベントの情報を漏れなく記録することを目標とする。
+    <h1>p3r 情報置き場 選択イベント履歴</h1>
+    このページで選択イベントの履歴を漏れなく記録することを目標とする。
     <hr>
 
-    
-
-    <table id="events" class="display">
+    <table id="example" class="display" style="width:100%">
         <thead>
             <tr>
                 <th>日付</th>
@@ -31,15 +31,15 @@
                 <th>学力累計</th>
             </tr>
             <tr>
-                <th><input type="text" placeholder="日付 検索" /></th>
-                <th><input type="text" placeholder="時間 検索" /></th>
-                <th><input type="text" placeholder="イベント名称 検索" /></th>
-                <th><input type="text" placeholder="勇気変化 検索" /></th>
-                <th><input type="text" placeholder="勇気累計 検索" /></th>
-                <th><input type="text" placeholder="魅力変化 検索" /></th>
-                <th><input type="text" placeholder="魅力累計 検索" /></th>
-                <th><input type="text" placeholder="学力変化 検索" /></th>
-                <th><input type="text" placeholder="学力累計 検索" /></th>
+                <th><input type="text" placeholder="日付検索" /></th>
+                <th><input type="text" placeholder="時間検索" /></th>
+                <th><input type="text" placeholder="イベント名称検索" /></th>
+                <th><input type="text" placeholder="勇気変化検索" /></th>
+                <th><input type="text" placeholder="勇気累計検索" disabled /></th>
+                <th><input type="text" placeholder="魅力変化検索" /></th>
+                <th><input type="text" placeholder="魅力累計検索" disabled /></th>
+                <th><input type="text" placeholder="学力変化検索" /></th>
+                <th><input type="text" placeholder="学力累計検索" disabled /></th>
             </tr>
         </thead>
         <tbody>
@@ -47,98 +47,155 @@
     </table>
 
     <script>
-        // CSVファイルの読み込み
-        Papa.parse("date_dependent_event.csv", {
-            download: true,   // CSVファイルをダウンロード
-            header: true,     // ヘッダー行を読み込む
-            complete: function(results) {
-                var data = results.data;
+        // カスタムソートを定義（月を基にして4月を最初、3月を最後に並べる）
+        $.fn.dataTable.ext.type.order['custom-month-order-pre'] = function (data) {
+            var monthOrder = {
+                '04': 1, '05': 2, '06': 3, '07': 4, '08': 5, '09': 6, '10': 7,
+                '11': 8, '12': 9, '01': 10, '02': 11, '03': 12,
+                '4': 1, '5': 2, '6': 3, '7': 4, '8': 5, '9': 6, '1': 10, '2': 11, '3': 12
+            };
 
-                // DataTablesを初期化
-                table = $('#events').DataTable({
-                    destroy: true,
-                    ordering: false,
-                    data: data, // パースされたCSVデータを設定
-                    columns: [
-                        { data: '日付', type: 'date'},   // CSVの列名に対応
-                        { data: '時間' },
-                        { data: 'イベント名称' },
-                        { data: '勇気変化' },
-                        { data: '勇気累計' },
-                        { data: '魅力変化' },
-                        { data: '魅力累計' },
-                        { data: '学力変化' },
-                        { data: '学力累計' },
-                    ],
+            // 日付が "MM-DD" の形式であると仮定
+            var month = monthOrder[data.split('/')[0]] || 13;  // 月を取得、定義外の値は最後にソート
+            var day = parseFloat(data.split('/')[1]) || 0;
+            return month * 31 + day;  // 定義外の値は最後にソート
+        };
 
-                    "footerCallback": function (row, data, start, end, display) {
-                        var api = this.api();
-                        
-                        var courage_total = 0;
-                        var attraction_total = 0;
-                        var knowledge_total = 0;
-
-                        
-                        // 各行をループして累計を計算
-                        api.rows({ page: 'current' }).every(function (rowIdx, tableLoop, rowLoop) {
-                            var data = this.data();
-                            
-                            var courage = parseInt(data.勇気変化) || 0;
-                            var attraction = parseInt(data.魅力変化) || 0;  
-                            var knowledge = parseInt(data.学力変化) || 0; 
-                            courage_total += courage;
-                            attraction_total += attraction;
-                            knowledge_total += knowledge;
-
-                            api.cell(rowIdx, 4).data(courage_total);
-                            api.cell(rowIdx, 6).data(attraction_total);
-                            api.cell(rowIdx, 8).data(knowledge_total);
-
-                        });
-                    },
-                    /*
-                    "columnDefs": [
-                        { "targets": 1, "orderable": false },
-                        { "targets": 4, "orderable": false },
-                        { "targets": 6, "orderable": false }, 
-                        { "targets": 8, "orderable": false } 
-                    ]
-                    */
-                });
+        // カスタムソートを定義（午前、放課後、夜の順）
+        $.fn.dataTable.ext.type.order['time-order-pre'] = function (data) {
+            switch (data) {
+                case '午前':
+                    return 1;
+                case '放課後':
+                    return 2;
+                case '夜':
+                    return 3;
+                default:
+                    return 4;  // 未知の値は最後にソート
             }
+        };
 
-            
-        });
+        // CSVファイルをサーバーから取得し、解析する関数
+        function fetchAndParseCSV(url) {
+            return fetch(url)
+                .then(response => response.text())
+                .then(csvData => {
+                    return new Promise((resolve, reject) => {
+                        Papa.parse(csvData, {
+                            header: true,
+                            skipEmptyLines: true,
+                            complete: function (results) {
+                                resolve(results.data);  // 解析されたデータを返す
+                            },
+                            error: function (error) {
+                                reject(error);
+                            }
+                        });
+                    });
+                })
+                .catch(error => console.error('Error fetching CSV:', error));
+        }
 
-    </script>
+        // 2つのCSVデータを結合する関数
+        function combineCSVData(csv1Data, csv2Data) {
+            return csv1Data.concat(csv2Data);
+        }
 
+        // DataTablesにデータを表示し、累計を計算する関数
+        function updateDataTable(table, data) {
+            table.clear();  // 既存のテーブルをクリア
 
-    <script>
-    $(document).ready(function() {
-                
-        table = $('#events').DataTable({
-            destroy: true,
-            ordering: false
-        });
+            data.forEach(function (row) {
+                table.row.add([
+                    row['日付'],
+                    row['時間'],
+                    row['イベント名称'],
+                    parseFloat(row['勇気変化']) || 0,  // 勇気変化（空の場合は0とする）
+                    0,  // 勇気累計は後で計算
+                    parseFloat(row['魅力変化']) || 0,
+                    0,  // 魅力累計は後で計算
+                    parseFloat(row['学力変化']) || 0,
+                    0  // 学力累計は後で計算
+                ]);
+            });
 
-        // 各列に対して検索を適用
-        $('#events thead tr:nth-child(2) th').each(function(index) {
-            var that = this;
+            table.draw();  // DataTablesを再描画
+        }
 
-            // 入力フィールドでフィルタリング
-            $('input', this).on('keyup change', function() {
-                if (table.column(index).search() !== this.value) {
-                    table.column(index).search(this.value).draw();
+        // 勇気累計の再計算を行う関数
+        function recalculateCourageTotal(table) {
+            let courageTotal = 0;  // 勇気累計の初期値
+            let attractivenessTotal = 0;  // 魅力累計の初期値
+            let knowledgeTotal = 0;  // 学力累計の初期値
+
+            // 表示されているデータを順に処理
+            table.rows({ search: 'applied' }).every(function (rowIdx, tableLoop, rowLoop) {
+                let data = this.data();
+                let courageChange = parseFloat(data[3]) || 0;  // 勇気変化（数値に変換）
+                let attractivenessChange = parseFloat(data[5]) || 0;  // 魅力変化（数値に変換）
+                let knowledgeChange = parseFloat(data[7]) || 0;  // 学力変化（数値に変換）
+
+                // 累計値を計算
+                courageTotal += courageChange;
+                attractivenessTotal += attractivenessChange;
+                knowledgeTotal += knowledgeChange;
+                data[4] = courageTotal;  // 勇気累計を更新
+                data[6] = attractivenessTotal;  // 魅力累計を更新
+                data[8] = knowledgeTotal;  // 学力累計を更新
+
+                this.data(data);  // 更新したデータをテーブルに反映
+            });
+        }
+
+        // 全体の処理
+        function loadCSVAndDisplay() {
+            var table = $('#example').DataTable({
+                columnDefs: [
+                    { targets: 0, type: 'custom-month-order' },  // 日付列にカスタム月順のソートを適用
+                    { targets: 1, type: 'time-order' },  // 時間列をカスタムソート「time-order」に設定
+                    { targets: 4, orderable: false },  // 勇気累計のソートを無効化
+                    { targets: 6, orderable: false },  // 魅力累計のソートを無効化
+                    { targets: 8, orderable: false }  // 学力累計のソートを無効化
+                ],
+                initComplete: function () {
+                    // 各列に検索フィールドを追加
+                    this.api().columns().every(function () {
+                        var that = this;
+
+                        // 検索ボックスの変更を監視
+                        $('input', this.header()).on('keyup change', function () {
+                            if (that.search() !== this.value) {
+                                that.search(this.value).draw();
+                            }
+                        });
+                    });
+                },
+                drawCallback: function (settings) {
+                    recalculateCourageTotal(this.api());  // テーブルが再描画されるたびに勇気累計を再計算
                 }
             });
-        });
-    });
-    </script>
 
+            Promise.all([
+                fetchAndParseCSV('date_dependent_event.csv')
+            ])
+                .then(([csvData]) => {
+                    // DataTablesにデータを更新し、累計を計算
+                    updateDataTable(table, csvData);
+                })
+                .catch(error => {
+                    console.error('Error processing CSV files:', error);
+                });
+        }
+
+        // ページがロードされたらDataTablesを表示
+        $(document).ready(function () {
+            loadCSVAndDisplay();
+        });
+    </script>
 
     <div id="footer"></div>
     <script>
-    fetch('../include/footer.html')
+        fetch('../include/footer.html')
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -154,4 +211,5 @@
     </script>
 
 </body>
+
 </html>
