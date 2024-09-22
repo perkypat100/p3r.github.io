@@ -12,16 +12,34 @@
 </head>
 <body>
     <h1>p3r 情報置き場 日付依存イベント</h1>
+    このページでは日付依存イベントの情報を漏れなく記録することを目標とする。
+    <hr>
 
-    <table id="example" class="display">
+    
+
+    <table id="events" class="display">
         <thead>
             <tr>
-                <th>Name<input type="text" placeholder="Search Name"></th>
-                <th>Position<input type="text" placeholder="Search Position"></th>
-                <th>Office<input type="text" placeholder="Search Office"></th>
-                <th>Age<input type="text" placeholder="Search Age"></th>
-                <th>Start Date<input type="text" placeholder="Search Start Date"></th>
-                <th>Salary<input type="text" placeholder="Search Salary"></th>
+                <th>日付</th>
+                <th>時間</th>
+                <th>イベント名称</th>
+                <th>勇気変化</th>
+                <th>勇気累計</th>
+                <th>魅力変化</th>
+                <th>魅力累計</th>
+                <th>学力変化</th>
+                <th>学力累計</th>
+            </tr>
+            <tr>
+                <th><input type="text" placeholder="日付 検索" /></th>
+                <th><input type="text" placeholder="時間 検索" /></th>
+                <th><input type="text" placeholder="イベント名称 検索" /></th>
+                <th><input type="text" placeholder="勇気変化 検索" /></th>
+                <th><input type="text" placeholder="勇気累計 検索" /></th>
+                <th><input type="text" placeholder="魅力変化 検索" /></th>
+                <th><input type="text" placeholder="魅力累計 検索" /></th>
+                <th><input type="text" placeholder="学力変化 検索" /></th>
+                <th><input type="text" placeholder="学力累計 検索" /></th>
             </tr>
         </thead>
         <tbody>
@@ -36,32 +54,86 @@
             complete: function(results) {
                 var data = results.data;
 
+                table = $('#events').DataTable(
+                    {ordering: false}
+                );
+                table.destroy();
+
                 // DataTablesを初期化
-                $('#example').DataTable({
+                table = $('#events').DataTable({
+                    ordering: false,
                     data: data, // パースされたCSVデータを設定
                     columns: [
-                        { data: 'Name' },       // CSVの列名に対応
-                        { data: 'Position' },
-                        { data: 'Office' },
-                        { data: 'Age' },
-                        { data: 'Start Date' },
-                        { data: 'Salary' }
+                        { data: '日付', type: 'date'},   // CSVの列名に対応
+                        { data: '時間' },
+                        { data: 'イベント名称' },
+                        { data: '勇気変化' },
+                        { data: '勇気累計' },
+                        { data: '魅力変化' },
+                        { data: '魅力累計' },
+                        { data: '学力変化' },
+                        { data: '学力累計' },
+                    ],
+
+                    "footerCallback": function (row, data, start, end, display) {
+                        var api = this.api();
+                        
+                        var courage_total = 0;
+                        var attraction_total = 0;
+                        var knowledge_total = 0;
+
+                        
+                        // 各行をループして累計を計算
+                        api.rows({ page: 'current' }).every(function (rowIdx, tableLoop, rowLoop) {
+                            var data = this.data();
+                            
+                            var courage = parseInt(data.勇気変化) || 0;
+                            var attraction = parseInt(data.魅力変化) || 0;  
+                            var knowledge = parseInt(data.学力変化) || 0; 
+                            courage_total += courage;
+                            attraction_total += attraction;
+                            knowledge_total += knowledge;
+
+                            api.cell(rowIdx, 4).data(courage_total);
+                            api.cell(rowIdx, 6).data(attraction_total);
+                            api.cell(rowIdx, 8).data(knowledge_total);
+
+                        });
+                    },
+                    /*
+                    "columnDefs": [
+                        { "targets": 1, "orderable": false },
+                        { "targets": 4, "orderable": false },
+                        { "targets": 6, "orderable": false }, 
+                        { "targets": 8, "orderable": false } 
                     ]
+                    */
                 });
             }
+
+            
         });
+
     </script>
 
     <script>
-        $(document).ready(function() {
-            var table = $('#example').DataTable();
-        
-            // 各列に検索ボックスを設定
-            $('#example thead input').on('keyup change', function() {
-                var columnIndex = $(this).parent().index(); // 現在の列のインデックス
-                table.column(columnIndex).search(this.value).draw(); // 検索実行
+    $(document).ready(function() {
+        table = $('#events').DataTable(
+            {ordering: false}
+        );
+
+        // 各列に対して検索を適用
+        $('#events thead tr:nth-child(2) th').each(function(index) {
+            var that = this;
+
+            // 入力フィールドでフィルタリング
+            $('input', this).on('keyup change', function() {
+                if (table.column(index).search() !== this.value) {
+                    table.column(index).search(this.value).draw();
+                }
             });
         });
+    });
     </script>
 
 
