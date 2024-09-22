@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>p3r 情報置き場 タルタロス</title>
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <!-- PapaParse JS (CSV parsing library) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+</head>
+
+<body>
+
+    <h1>p3r 情報置き場 タルタロス</h1>
+    このページではタルタロスの情報で重要なものを記録することを目標とする。
+    <hr>
+
+    <table id="example" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>タルタロス名</th>
+                <th>階数</th>
+                <th>シャドウ名</th>
+                <th>ドロップ/売値</th>
+                <th>斬</th>
+                <th>打</th>
+                <th>貫</th>
+                <th>火</th>
+                <th>氷</th>
+                <th>雷</th>
+                <th>風</th>
+                <th>光</th>
+                <th>闇</th>
+                <th>使用スキル</th>
+            </tr>
+            <!-- 各列に検索ボックスとドロップダウンを追加 -->
+            <tr>
+                <th><input type="text" placeholder="検索 タルタロス名"></th>
+                <th>
+                    <select id="floorFilter">
+                        <option value="">すべて</option>
+                        <option value="1">1階</option>
+                        <option value="2">2階</option>
+                        <option value="3">3階</option>
+                        <option value="4">4階</option>
+                        <option value="5">5階</option>
+                        <option value="6">6階</option>
+                        <option value="7">7階</option>
+                    </select>
+                </th>
+                <th><input type="text" placeholder="検索 シャドウ名"></th>
+                <th><input type="text" placeholder="検索 ドロップ/売値"></th>
+                <th><select id="slashFilter">
+                        <option value="">すべて</option>
+                        <option value="弱点">弱点</option>
+                        <option value="通常">通常</option>
+                        <option value="無効">無効</option>
+                        <option value="反射">反射</option>
+                    </select></th>
+                <th><select id="strikeFilter">
+                        <option value="">すべて</option>
+                        <option value="弱点">弱点</option>
+                        <option value="通常">通常</option>
+                        <option value="無効">無効</option>
+                        <option value="反射">反射</option>
+                    </select></th>
+                <th><select id="pierceFilter">
+                        <option value="">すべて</option>
+                        <option value="弱点">弱点</option>
+                        <option value="通常">通常</option>
+                        <option value="無効">無効</option>
+                        <option value="反射">反射</option>
+                    </select></th>
+                <th><select id="fireFilter">
+                        <option value="">すべて</option>
+                        <option value="弱点">弱点</option>
+                        <option value="通常">通常</option>
+                        <option value="無効">無効</option>
+                        <option value="反射">反射</option>
+                    </select></th>
+                <th><select id="iceFilter">
+                        <option value="">すべて</option>
+                        <option value="弱点">弱点</option>
+                        <option value="通常">通常</option>
+                        <option value="無効">無効</option>
+                        <option value="反射">反射</option>
+                    </select></th>
+                <th><select id="thunderFilter">
+                        <option value="">すべて</option>
+                        <option value="弱点">弱点</option>
+                        <option value="通常">通常</option>
+                        <option value="無効">無効</option>
+                        <option value="反射">反射</option>
+                    </select></th>
+                <th><select id="windFilter">
+                        <option value="">すべて</option>
+                        <option value="弱点">弱点</option>
+                        <option value="通常">通常</option>
+                        <option value="無効">無効</option>
+                        <option value="反射">反射</option>
+                    </select></th>
+                <th><select id="lightFilter">
+                        <option value="">すべて</option>
+                        <option value="弱点">弱点</option>
+                        <option value="通常">通常</option>
+                        <option value="無効">無効</option>
+                        <option value="反射">反射</option>
+                    </select></th>
+                <th><select id="darknessFilter">
+                        <option value="">すべて</option>
+                        <option value="弱点">弱点</option>
+                        <option value="通常">通常</option>
+                        <option value="無効">無効</option>
+                        <option value="反射">反射</option>
+                    </select></th>
+                <th><input type="text" placeholder="検索 使用スキル"></th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <script>
+        // CSVファイルをAjaxで読み込んでパース
+        function fetchAndDisplayCSV() {
+            Papa.parse('tartarus.csv', {
+                download: true,
+                header: true,
+                skipEmptyLines: true, // 空行をスキップして末尾の改行に対応
+                complete: function (results) {
+                    var data = results.data;
+
+                    var table = $('#example').DataTable(); // DataTableの初期化
+
+                    // CSVデータをテーブルに追加
+                    data.forEach(function (row) {
+                        if (Object.keys(row).length > 0) {
+                            table.row.add([
+                                row['タルタロス名'],
+                                row['階数'],
+                                row['シャドウ名'],
+                                row['ドロップ/売値'],
+                                row['斬'],
+                                row['打'],
+                                row['貫'],
+                                row['火'],
+                                row['氷'],
+                                row['雷'],
+                                row['風'],
+                                row['光'],
+                                row['闇'],
+                                row['使用スキル']
+                            ]).draw(false);
+                        }
+                    });
+                    table.draw();
+                },
+                error: function (error) {
+                    console.error('CSV読み込み中にエラーが発生しました:', error);
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            $.fn.dataTable.ext.search.push(
+                function (settings, data, dataIndex) {
+                    var allColumnsValid = true;
+
+                    // 1. 階数列のカスタム検索ロジック (範囲対応)
+                    var selectedFloor = $('#floorFilter').val(); // 階数ドロップダウンの選択値
+                    var floorRange = data[1] || ""; // 1列目の階数 (例: "1-6")
+
+                    if (selectedFloor && selectedFloor !== "") {
+                        var selectedFloorNum = parseInt(selectedFloor, 10); // 選択された階数
+
+                        // range (例: "1-6") を "-" で分割して範囲を得る
+                        var rangeParts = floorRange.split('-');
+                        if (rangeParts.length === 2) {
+                            var minRange = parseInt(rangeParts[0], 10);
+                            var maxRange = parseInt(rangeParts[1], 10);
+
+                            // 選択された階数が範囲内かを確認
+                            if (!(selectedFloorNum >= minRange && selectedFloorNum <= maxRange)) {
+                                allColumnsValid = false; // 一致しない場合は無効
+                            }
+                        } else {
+                            // 単一の値の場合、選択した値がその値と一致するか確認
+                            if (parseInt(floorRange, 10) !== selectedFloorNum) {
+                                allColumnsValid = false;
+                            }
+                        }
+                    }
+
+                    // 2. ドロップダウン検索の処理（斬、打、貫、火、氷、雷、風、光、闇）
+                    function checkDropdown(columnIndex, filterId) {
+                        var filterValue = $(filterId).val();
+                        var columnValue = data[columnIndex] || "";
+                        if (filterValue && filterValue !== "" && filterValue !== columnValue) {
+                            return false; // 一致しない場合は無効
+                        }
+                        return true;
+                    }
+
+                    allColumnsValid = allColumnsValid && checkDropdown(4, '#slashFilter');
+                    allColumnsValid = allColumnsValid && checkDropdown(5, '#strikeFilter');
+                    allColumnsValid = allColumnsValid && checkDropdown(6, '#pierceFilter');
+                    allColumnsValid = allColumnsValid && checkDropdown(7, '#fireFilter');
+                    allColumnsValid = allColumnsValid && checkDropdown(8, '#iceFilter');
+                    allColumnsValid = allColumnsValid && checkDropdown(9, '#thunderFilter');
+                    allColumnsValid = allColumnsValid && checkDropdown(10, '#windFilter');
+                    allColumnsValid = allColumnsValid && checkDropdown(11, '#lightFilter');
+                    allColumnsValid = allColumnsValid && checkDropdown(12, '#darknessFilter');
+
+                    // 3. 他の列の通常の検索ロジック
+                    $('#example thead tr:eq(1) th').each(function (index) {
+                        var inputValue = $('input', this).val();
+                        if (inputValue && index !== 1) { // 階数列以外を処理
+                            var columnValue = data[index] || "";
+                            if (columnValue.toLowerCase().indexOf(inputValue.toLowerCase()) === -1) {
+                                allColumnsValid = false;
+                            }
+                        }
+                    });
+
+                    return allColumnsValid;
+                }
+            );
+
+            // DataTablesの初期化と列ごとの検索機能を追加
+            var table = $('#example').DataTable({
+                initComplete: function () {
+                    this.api().columns().every(function () {
+                        var that = this;
+
+                        // 各列にある検索ボックスのイベントを設定
+                        $('input', this.header()).on('keyup change', function () {
+                            that.draw(); // 検索が入力されるたびにテーブルを再描画
+                        });
+                    });
+                }
+            });
+
+            // 各ドロップダウンのイベント
+            $('#floorFilter, #slashFilter, #strikeFilter, #pierceFilter, #fireFilter, #iceFilter, #thunderFilter, #windFilter, #lightFilter, #darknessFilter').on('change', function () {
+                table.draw(); // ドロップダウンの選択変更時にテーブルを再描画
+            });
+
+            // CSVデータの読み込みと表示を行う
+            fetchAndDisplayCSV();
+        });
+    </script>
+
+    <div id="footer"></div>
+    <script>
+        fetch('../include/footer.html')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(data => {
+                document.getElementById('footer').innerHTML = data;
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+    </script>
+
+</body>
+
+</html>
