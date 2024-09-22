@@ -1,59 +1,245 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DataTables Example</title>
-    <!-- DataTablesのCSSとJSをCDNから読み込む -->
+    <title>p3r 情報置き場 ペルソナ</title>
+    <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- DataTables JS -->
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <!-- PapaParse JS (CSV parsing library) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 </head>
+
 <body>
 
-    <table id="example" class="display">
+    <h1>p3r 情報置き場 ペルソナ</h1>
+    このページではペルソナの情報を漏れなく記録することを目標とする。
+    <hr>
+
+    <table id="example" class="display" style="width:100%">
         <thead>
             <tr>
-                <th><input type="text" placeholder="Search Name"></th>
-                <th><input type="text" placeholder="Search Position"></th>
-                <th><input type="text" placeholder="Search Office"></th>
-                <th><input type="text" placeholder="Search Age"></th>
-                <th><input type="text" placeholder="Search Start Date"></th>
-                <th><input type="text" placeholder="Search Salary"></th>
+                <th>ペルソナ名</th>
+                <th>アルカナ</th>
+                <th>初期レベル</th>
+                <th>斬</th>
+                <th>打</th>
+                <th>貫</th>
+                <th>火</th>
+                <th>氷</th>
+                <th>雷</th>
+                <th>風</th>
+                <th>光</th>
+                <th>闇</th>
+                <th>取得スキル/習得レベル</th>
+            </tr>
+            <!-- 各列に検索ボックスとドロップダウンを追加 -->
+            <tr>
+                <th><input type="text" placeholder="検索 ペルソナ名"></th>
+                <th>
+                    <select id="arcanaFilter">
+                        <option value="">すべて</option>
+                        <option value="女教皇">女教皇</option>
+                    </select>
+                </th>
+                <th><input type="text" placeholder="検索 初期レベル"></th>
+                <th><select id="slashFilter">
+                        <option value="">すべて</option>
+                        <option value="弱点">弱点</option>
+                        <option value="通常">通常</option>
+                        <option value="無効">無効</option>
+                        <option value="反射">反射</option>
+                    </select></th>
+                <th><select id="strikeFilter">
+                        <option value="">すべて</option>
+                        <option value="弱点">弱点</option>
+                        <option value="通常">通常</option>
+                        <option value="無効">無効</option>
+                        <option value="反射">反射</option>
+                    </select></th>
+                <th><select id="pierceFilter">
+                        <option value="">すべて</option>
+                        <option value="弱点">弱点</option>
+                        <option value="通常">通常</option>
+                        <option value="無効">無効</option>
+                        <option value="反射">反射</option>
+                    </select></th>
+                <th><select id="fireFilter">
+                        <option value="">すべて</option>
+                        <option value="弱点">弱点</option>
+                        <option value="通常">通常</option>
+                        <option value="無効">無効</option>
+                        <option value="反射">反射</option>
+                    </select></th>
+                <th><select id="iceFilter">
+                        <option value="">すべて</option>
+                        <option value="弱点">弱点</option>
+                        <option value="通常">通常</option>
+                        <option value="無効">無効</option>
+                        <option value="反射">反射</option>
+                    </select></th>
+                <th><select id="thunderFilter">
+                        <option value="">すべて</option>
+                        <option value="弱点">弱点</option>
+                        <option value="通常">通常</option>
+                        <option value="無効">無効</option>
+                        <option value="反射">反射</option>
+                    </select></th>
+                <th><select id="windFilter">
+                        <option value="">すべて</option>
+                        <option value="弱点">弱点</option>
+                        <option value="通常">通常</option>
+                        <option value="無効">無効</option>
+                        <option value="反射">反射</option>
+                    </select></th>
+                <th><select id="lightFilter">
+                        <option value="">すべて</option>
+                        <option value="弱点">弱点</option>
+                        <option value="通常">通常</option>
+                        <option value="無効">無効</option>
+                        <option value="反射">反射</option>
+                    </select></th>
+                <th><select id="darknessFilter">
+                        <option value="">すべて</option>
+                        <option value="弱点">弱点</option>
+                        <option value="通常">通常</option>
+                        <option value="無効">無効</option>
+                        <option value="反射">反射</option>
+                    </select></th>
+                <th><input type="text" placeholder="検索 取得スキル/習得レベル"></th>
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td>Tiger Nixon</td>
-                <td>System Architect</td>
-                <td>Edinburgh</td>
-                <td>61</td>
-                <td>2011/04/25</td>
-                <td>$320,800</td>
-            </tr>
-            <tr>
-                <td>Teiger Nixon</td>
-                <td>Syestem Architect</td>
-                <td>Edeinburgh</td>
-                <td>631</td>
-                <td>2021/04/25</td>
-                <td>$310,800</td>
-            </tr>
-            <!-- さらにデータを追加 -->
         </tbody>
     </table>
 
     <script>
-        $(document).ready(function() {
-            var table = $('#example').DataTable();
-        
-            // 各列に検索ボックスを設定
-            $('#example thead input').on('keyup change', function() {
-                var columnIndex = $(this).parent().index(); // 現在の列のインデックス
-                table.column(columnIndex).search(this.value).draw(); // 検索実行
+        // CSVファイルをAjaxで読み込んでパース
+        function fetchAndDisplayCSV() {
+            Papa.parse('persona.csv', {
+                download: true,
+                header: true,
+                skipEmptyLines: true, // 空行をスキップして末尾の改行に対応
+                complete: function (results) {
+                    var data = results.data;
+
+                    var table = $('#example').DataTable(); // DataTableの初期化
+
+                    // CSVデータをテーブルに追加
+                    data.forEach(function (row) {
+                        if (Object.keys(row).length > 0) {
+                            table.row.add([
+                                row['ペルソナ名'],
+                                row['アルカナ'],
+                                row['初期レベル'],
+                                row['斬'],
+                                row['打'],
+                                row['貫'],
+                                row['火'],
+                                row['氷'],
+                                row['雷'],
+                                row['風'],
+                                row['光'],
+                                row['闇'],
+                                row['取得スキル/習得レベル']
+                            ]).draw(false);
+                        }
+                    });
+                    table.draw();
+                },
+                error: function (error) {
+                    console.error('CSV読み込み中にエラーが発生しました:', error);
+                }
             });
+        }
+
+        $(document).ready(function () {
+            $.fn.dataTable.ext.search.push(
+                function (settings, data, dataIndex) {
+                    var allColumnsValid = true;
+
+                    // 1. ドロップダウン検索の処理
+                    function checkDropdown(columnIndex, filterId) {
+                        var filterValue = $(filterId).val();
+                        var columnValue = data[columnIndex] || "";
+                        if (filterValue && filterValue !== "" && filterValue !== columnValue) {
+                            return false; // 一致しない場合は無効
+                        }
+                        return true;
+                    }
+
+                    allColumnsValid = allColumnsValid && checkDropdown(1, '#arcanaFilter');
+                    allColumnsValid = allColumnsValid && checkDropdown(3, '#slashFilter');
+                    allColumnsValid = allColumnsValid && checkDropdown(4, '#strikeFilter');
+                    allColumnsValid = allColumnsValid && checkDropdown(5, '#pierceFilter');
+                    allColumnsValid = allColumnsValid && checkDropdown(6, '#fireFilter');
+                    allColumnsValid = allColumnsValid && checkDropdown(7, '#iceFilter');
+                    allColumnsValid = allColumnsValid && checkDropdown(8, '#thunderFilter');
+                    allColumnsValid = allColumnsValid && checkDropdown(9, '#windFilter');
+                    allColumnsValid = allColumnsValid && checkDropdown(10, '#lightFilter');
+                    allColumnsValid = allColumnsValid && checkDropdown(11, '#darknessFilter');
+
+                    // 2. 他の列の通常の検索ロジック
+                    $('#example thead tr:eq(1) th').each(function (index) {
+                        var inputValue = $('input', this).val();
+                        if (inputValue && index !== 1) { // 階数列以外を処理
+                            var columnValue = data[index] || "";
+                            if (columnValue.toLowerCase().indexOf(inputValue.toLowerCase()) === -1) {
+                                allColumnsValid = false;
+                            }
+                        }
+                    });
+
+                    return allColumnsValid;
+                }
+            );
+
+            // DataTablesの初期化と列ごとの検索機能を追加
+            var table = $('#example').DataTable({
+                initComplete: function () {
+                    this.api().columns().every(function () {
+                        var that = this;
+
+                        // 各列にある検索ボックスのイベントを設定
+                        $('input', this.header()).on('keyup change', function () {
+                            that.draw(); // 検索が入力されるたびにテーブルを再描画
+                        });
+                    });
+                }
+            });
+
+            // 各ドロップダウンのイベント
+            $('#arcanaFilter, #slashFilter, #strikeFilter, #pierceFilter, #fireFilter, #iceFilter, #thunderFilter, #windFilter, #lightFilter, #darknessFilter').on('change', function () {
+                table.draw(); // ドロップダウンの選択変更時にテーブルを再描画
+            });
+
+            // CSVデータの読み込みと表示を行う
+            fetchAndDisplayCSV();
         });
     </script>
 
+    <div id="footer"></div>
+    <script>
+        fetch('../include/footer.html')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(data => {
+                document.getElementById('footer').innerHTML = data;
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+    </script>
+
 </body>
+
 </html>
