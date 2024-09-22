@@ -1,194 +1,150 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>p3r 情報置き場 コミュ</title>
-    <style>
-        table {
-            width: 50%;
-            border-collapse: collapse;
-        }
-
-        th,
-        td {
-            border: 1px solid #000;
-            padding: 8px;
-            text-align: center;
-        }
-
-        th {
-            background-color: #f2f2f2;
-        }
-    </style>
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <!-- PapaParse JS (CSV parsing library) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 </head>
 
 <body>
+
     <h1>p3r 情報置き場 コミュ</h1>
     このページではコミュの情報を漏れなく記録することを目標とする。
     <hr>
 
-    <h2>愚者 特別課外活動部</h2>
-    <table>
+    <table id="example" class="display" style="width:100%">
         <thead>
             <tr>
+                <th>コミュ名</th>
                 <th>フェーズ</th>
                 <th>条件</th>
             </tr>
-        </thead>
-        <tbody>
+            <!-- 各列に検索ボックスとドロップダウンを追加 -->
             <tr>
-                <td>ランク0→1</td>
-                <td>4/18に自動で</td>
-            </tr>
-            <tr>
-                <td>ランク1→2</td>
-                <td>4/20に自動で</td>
-            </tr>
-            <tr>
-                <td>ランク2→3</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>ランク3→4</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>ランク4→5</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>ランク5→6</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>ランク6→7</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>ランク7→8</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>ランク8→9</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>ランク9→10</td>
-                <td></td>
-            </tr>
-        </tbody>
-    </table>
-
-    <h2>魔術師 クラスメイト 友近 健二</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>フェーズ</th>
-                <th>条件</th>
+                <th>
+                    <select id="commuFilter">
+                        <option value="">すべて</option>
+                        <option value="愚者 特別課外活動部">愚者 特別課外活動部</option>
+                        <option value="魔術師 クラスメイト 友近 健二">魔術師 クラスメイト 友近 健二</option>
+                    </select>
+                </th>
+                <th>
+                    <select id="phaseFilter">
+                        <option value="">すべて</option>
+                        <option value="ランク0→1">ランク0→1</option>
+                        <option value="ランク1→2">ランク1→2</option>
+                        <option value="ランク2→3">ランク2→3</option>
+                        <option value="ランク3→4">ランク3→4</option>
+                        <option value="ランク4→5">ランク4→5</option>
+                        <option value="ランク5→6">ランク5→6</option>
+                        <option value="ランク6→7">ランク6→7</option>
+                        <option value="ランク7→8">ランク7→8</option>
+                        <option value="ランク8→9">ランク8→9</option>
+                        <option value="ランク9→10">ランク9→10</option>
+                    </select>
+                </th>
+                <th><input type="text" placeholder="検索 条件"></th>
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td>ランク0→1</td>
-                <td>4/22に自動で</td>
-            </tr>
-            <tr>
-                <td>ランク1→2</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>ランク2→3</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>ランク3→4</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>ランク4→5</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>ランク5→6</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>ランク6→7</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>ランク7→8</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>ランク8→9</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>ランク9→10</td>
-                <td></td>
-            </tr>
         </tbody>
     </table>
 
+    <script>
+        // CSVファイルをAjaxで読み込んでパース
+        function fetchAndDisplayCSV() {
+            Papa.parse('commu.csv', {
+                download: true,
+                header: true,
+                skipEmptyLines: true, // 空行をスキップして末尾の改行に対応
+                complete: function (results) {
+                    var data = results.data;
 
+                    var table = $('#example').DataTable(); // DataTableの初期化
 
+                    // CSVデータをテーブルに追加
+                    data.forEach(function (row) {
+                        if (Object.keys(row).length > 0) {
+                            table.row.add([
+                                row['コミュ名'],
+                                row['フェーズ'],
+                                row['条件'],
+                            ]).draw(false);
+                        }
+                    });
+                    table.draw();
+                },
+                error: function (error) {
+                    console.error('CSV読み込み中にエラーが発生しました:', error);
+                }
+            });
+        }
 
-    <!-- 
-    <h2>ひな形</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>フェーズ</th>
-                    <th>条件</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>ランク0→1</td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>ランク1→2</td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>ランク2→3</td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>ランク3→4</td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>ランク4→5</td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>ランク5→6</td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>ランク6→7</td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>ランク7→8</td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>ランク8→9</td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>ランク9→10</td>
-                    <td></td>
-                </tr>
-            </tbody>
-        </table> -->
+        $(document).ready(function () {
+            $.fn.dataTable.ext.search.push(
+                function (settings, data, dataIndex) {
+                    var allColumnsValid = true;
 
+                    // 1. ドロップダウン検索の処理
+                    function checkDropdown(columnIndex, filterId) {
+                        var filterValue = $(filterId).val();
+                        var columnValue = data[columnIndex] || "";
+                        if (filterValue && filterValue !== "" && filterValue !== columnValue) {
+                            return false; // 一致しない場合は無効
+                        }
+                        return true;
+                    }
+
+                    allColumnsValid = allColumnsValid && checkDropdown(0, '#commuFilter');
+                    allColumnsValid = allColumnsValid && checkDropdown(1, '#phaseFilter');
+
+                    // 2. 他の列の通常の検索ロジック
+                    $('#example thead tr:eq(1) th').each(function (index) {
+                        var inputValue = $('input', this).val();
+                        if (inputValue && index !== 1) { // 階数列以外を処理
+                            var columnValue = data[index] || "";
+                            if (columnValue.toLowerCase().indexOf(inputValue.toLowerCase()) === -1) {
+                                allColumnsValid = false;
+                            }
+                        }
+                    });
+
+                    return allColumnsValid;
+                }
+            );
+
+            // DataTablesの初期化と列ごとの検索機能を追加
+            var table = $('#example').DataTable({
+                initComplete: function () {
+                    this.api().columns().every(function () {
+                        var that = this;
+
+                        // 各列にある検索ボックスのイベントを設定
+                        $('input', this.header()).on('keyup change', function () {
+                            that.draw(); // 検索が入力されるたびにテーブルを再描画
+                        });
+                    });
+                }
+            });
+
+            // 各ドロップダウンのイベント
+            $('#commuFilter, #phaseFilter').on('change', function () {
+                table.draw(); // ドロップダウンの選択変更時にテーブルを再描画
+            });
+
+            // CSVデータの読み込みと表示を行う
+            fetchAndDisplayCSV();
+        });
+    </script>
 
     <div id="footer"></div>
     <script>
