@@ -47,7 +47,7 @@
                     </select>
                 </th>
                 <th>
-                    <select id="type">
+                    <select id="typeFilter">
                         <option value="">すべて</option>
                         <option value="コイン">コイン</option>
                         <option value="ワンド">ワンド/経験値</option>
@@ -58,7 +58,7 @@
                     </select>
                 </th>
                 <th>
-                    <select id="rank">
+                    <select id="rankFilter">
                         <option value="">すべて</option>
                         <option value="1">ランク1</option>
                         <option value="2">ランク2</option>
@@ -152,8 +152,8 @@
                         return true;
                     }
 
-                    allColumnsValid = allColumnsValid && checkDropdown(2, '#type');
-                    allColumnsValid = allColumnsValid && checkDropdown(3, '#rank');
+                    allColumnsValid = allColumnsValid && checkDropdown(2, '#typeFilter');
+                    allColumnsValid = allColumnsValid && checkDropdown(3, '#rankFilter');
                     // 3. 他の列の通常の検索ロジック
                     $('#example thead tr:eq(1) th').each(function (index) {
                         var inputValue = $('input', this).val();
