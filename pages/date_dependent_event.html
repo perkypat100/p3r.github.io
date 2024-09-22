@@ -54,13 +54,9 @@
             complete: function(results) {
                 var data = results.data;
 
-                table = $('#events').DataTable(
-                    {ordering: false}
-                );
-                table.destroy();
-
                 // DataTablesを初期化
                 table = $('#events').DataTable({
+                    destroy: true,
                     ordering: false,
                     data: data, // パースされたCSVデータを設定
                     columns: [
@@ -116,11 +112,14 @@
 
     </script>
 
+
     <script>
     $(document).ready(function() {
-        table = $('#events').DataTable(
-            {ordering: false}
-        );
+                
+        table = $('#events').DataTable({
+            destroy: true,
+            ordering: false
+        });
 
         // 各列に対して検索を適用
         $('#events thead tr:nth-child(2) th').each(function(index) {
